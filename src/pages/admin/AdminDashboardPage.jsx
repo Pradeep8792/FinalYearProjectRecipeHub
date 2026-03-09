@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiFileText,
   FiFlag,
@@ -8,33 +8,34 @@ import {
   FiUsers,
   FiTrendingUp,
   FiActivity,
-  FiArrowRight
-} from 'react-icons/fi'
-import AdminLayout from '../../components/layout/AdminLayout'
-import Loader from '../../components/common/Loader'
-import StatCard from '../../components/common/StatCard'
-import { adminApi } from '../../api/adminApi.jsx'
-import usePageTitle from '../../hooks/usePageTitle.jsx'
+  FiArrowRight,
+  FiShield,
+  FiZap,
+  FiClock
+} from 'react-icons/fi';
+import AdminLayout from '../../components/layout/AdminLayout';
+import Loader from '../../components/common/Loader';
+import StatCard from '../../components/common/StatCard';
+import Button from '../../components/common/Button';
+import { adminApi } from '../../api/adminApi.jsx';
+import usePageTitle from '../../hooks/usePageTitle.jsx';
 
-function normalizeArray(value) {
-  if (Array.isArray(value)) return value
-  if (Array.isArray(value?.data)) return value.data
-  if (Array.isArray(value?.items)) return value.items
-  if (Array.isArray(value?.categories)) return value.categories
-  if (Array.isArray(value?.recentRecipes)) return value.recentRecipes
-  if (Array.isArray(value?.reports)) return value.reports
-  return []
-}
+const normalizeArray = (value) => {
+  if (Array.isArray(value)) return value;
+  if (Array.isArray(value?.data)) return value.data;
+  if (Array.isArray(value?.items)) return value.items;
+  return [];
+};
 
-function AdminDashboardPage() {
-  usePageTitle('Admin — Dashboard')
+const AdminDashboardPage = () => {
+  usePageTitle('Executive Console | RecipeHub Administration');
 
   const [data, setData] = useState({
     overview: {},
     categories: [],
     reports: []
-  })
-  const [loading, setLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadDashboard = async () => {
@@ -43,192 +44,208 @@ function AdminDashboardPage() {
           adminApi.dashboardOverview(6),
           adminApi.dashboardCategories(),
           adminApi.dashboardReports()
-        ])
+        ]);
 
         setData({
           overview: overviewRes || {},
           categories: normalizeArray(categoriesRes),
           reports: normalizeArray(reportsRes)
-        })
+        });
       } catch (error) {
-        console.error('Failed to load admin dashboard:', error)
-        setData({
-          overview: {},
-          categories: [],
-          reports: []
-        })
+        console.error('Failed to load admin dashboard:', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    loadDashboard()
-  }, [])
+    loadDashboard();
+  }, []);
 
   if (loading) {
     return (
       <AdminLayout>
-        <div className="flex justify-center py-20">
-          <Loader />
+        <div className="flex flex-col items-center justify-center py-40">
+          <Loader variant="primary" />
+          <p className="mt-6 text-sm font-bold text-surface-400 uppercase tracking-widest animate-pulse">Synchronizing Command Center...</p>
         </div>
       </AdminLayout>
-    )
+    );
   }
 
-  const stats = data?.overview || {}
-  const recentRecipes = normalizeArray(stats?.recentRecipes)
-  const categoryItems = normalizeArray(data?.categories)
+  const stats = data?.overview || {};
+  const recentRecipes = normalizeArray(stats?.recentRecipes);
+  const categoryItems = data?.categories || [];
 
   return (
     <AdminLayout>
-      <div className="space-y-12">
-        <header className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-          <div>
-            <span className="mb-2 block text-[10px] font-black uppercase tracking-[0.2em] text-primary-500">
-              System Operations
-            </span>
-            <h1 className="text-5xl font-black tracking-tight text-surface-900">
-              Platform Hub
-            </h1>
+      <div className="space-y-16 pb-20">
+        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 text-primary-500 mb-2">
+              <FiShield size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Executive Authority</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-serif font-bold text-surface-900 tracking-tight leading-tight">Command Center</h1>
+            <p className="mt-3 text-surface-500 text-lg font-medium leading-relaxed">
+              Global oversight of the platform's culinary ecosystem and user engagement metrics.
+            </p>
           </div>
 
-          <div className="flex gap-4">
-            <Link to="/admin/analytics" className="btn-secondary px-6">
-              Detailed Analytics
+          <div className="flex items-center gap-4">
+            <Link to="/admin/analytics">
+              <Button variant="secondary" size="lg" icon={<FiActivity />}>
+                Detailed Insights
+              </Button>
             </Link>
           </div>
         </header>
 
+        {/* Executive Summary */}
         <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
           <StatCard
             icon={<FiUsers />}
-            title="Total Users"
+            title="Active Intelligence (Users)"
             value={stats.totalUsers || 0}
-            trend="4"
+            trend="12.5"
+            description="Total registered identifiers"
           />
           <StatCard
             icon={<FiFileText />}
-            title="Recipes"
+            title="Archive Volume (Recipes)"
             value={stats.totalRecipes || 0}
-            trend="6"
+            trend="8.1"
+            description="Documented masterpieces"
           />
           <StatCard
             icon={<FiLayers />}
-            title="Categories"
+            title="Structural Nodes (Categories)"
             value={stats.totalCategories || categoryItems.length || 0}
+            description="Curated classifications"
           />
           <StatCard
             icon={<FiFlag />}
-            title="Active Reports"
-            value={stats.openReports || stats.totalReports || 0}
-            trend="-2"
+            title="Incident Queue (Reports)"
+            value={stats.openReports || 0}
+            trend="-14.2"
+            description="Active reports requiring review"
           />
         </div>
 
-        <div className="grid gap-10 xl:grid-cols-2">
-          <section>
-            <div className="mb-8 flex items-center justify-between">
-              <h2 className="flex items-center gap-3 text-3xl font-black tracking-tight text-surface-900">
-                <FiActivity className="text-primary-500" />
-                Recent Submissions
-              </h2>
-
-              <Link
-                to="/admin/recipes"
-                className="text-xs font-black uppercase tracking-widest text-primary-500 transition-colors hover:text-primary-600"
-              >
-                Manage All
+        <div className="grid gap-12 xl:grid-cols-[1fr,400px]">
+          {/* Main Activity Feed */}
+          <section className="space-y-10">
+            <div className="flex items-center justify-between border-b border-surface-100 pb-8">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-1.5 bg-primary-500 rounded-full" />
+                <h2 className="text-3xl font-serif font-bold text-surface-900 tracking-tight">Recent Archives</h2>
+              </div>
+              <Link to="/admin/recipes">
+                <Button variant="ghost" size="sm" icon={<FiArrowRight />}>
+                  Manage All
+                </Button>
               </Link>
             </div>
 
-            <div className="space-y-4">
-              {recentRecipes.length === 0 ? (
-                <div className="rounded-3xl border border-surface-100 bg-white p-6 text-surface-500">
-                  No recent recipes found.
-                </div>
-              ) : (
-                recentRecipes.map((recipe, i) => (
-                  <motion.div
-                    key={recipe.recipeId || recipe.id || i}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.08 }}
-                    className="group flex items-center justify-between rounded-3xl border border-surface-100 bg-white p-5 transition-all hover:shadow-soft-xl"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-50 font-black text-surface-900">
-                        {recipe?.title?.[0] || 'R'}
-                      </div>
-
-                      <div>
-                        <p className="font-black text-surface-900 transition-colors group-hover:text-primary-600">
-                          {recipe?.title || 'Untitled Recipe'}
-                        </p>
-
-                        <div className="mt-1 flex items-center gap-2">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                            {recipe?.status || 'Unknown'}
-                          </span>
-                          <div className="h-1 w-1 rounded-full bg-surface-200" />
-                          <span className="text-[10px] font-black uppercase tracking-widest text-primary-500">
-                            {recipe?.categoryName || 'General'}
-                          </span>
+            <div className="space-y-6">
+              <AnimatePresence>
+                {recentRecipes.length === 0 ? (
+                  <div className="py-20 text-center rounded-[3rem] border-2 border-dashed border-surface-100 grayscale opacity-40">
+                    <FiFileText className="mx-auto text-surface-100 mb-4" size={48} />
+                    <p className="text-[10px] font-bold uppercase tracking-widest">No Recent Submissions</p>
+                  </div>
+                ) : (
+                  recentRecipes.map((recipe, i) => (
+                    <motion.div
+                      key={recipe.recipeId || i}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="group flex items-center justify-between rounded-[2.5rem] border border-surface-100 bg-white p-6 transition-all hover:shadow-premium hover:border-primary-100"
+                    >
+                      <div className="flex items-center gap-6">
+                        <div className="h-16 w-16 rounded-2xl bg-surface-50 flex items-center justify-center font-serif font-bold text-2xl text-surface-400 border border-surface-100 group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">
+                          {recipe?.title?.[0] || 'R'}
+                        </div>
+                        <div>
+                          <p className="text-lg font-serif font-bold text-surface-900 group-hover:text-primary-600 transition-colors leading-tight">
+                            {recipe?.title || 'Untitled Masterpiece'}
+                          </p>
+                          <div className="mt-2 flex items-center gap-3">
+                            <span className={`px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-widest ${recipe?.status === 'Published' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'}`}>
+                              {recipe?.status || 'Archived'}
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-surface-200" />
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-primary-500 flex items-center gap-1">
+                              <FiLayers size={10} /> {recipe?.categoryName || 'General'}
+                            </span>
+                            <span className="h-1 w-1 rounded-full bg-surface-200" />
+                            <span className="text-[9px] font-bold uppercase tracking-widest text-surface-400 flex items-center gap-1">
+                              <FiClock size={10} /> {new Date().toLocaleDateString()}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <Link
-                      to={`/admin/recipes/${recipe?.recipeId || recipe?.id}`}
-                      className="flex h-10 w-10 items-center justify-center rounded-xl transition-colors hover:bg-primary-50"
-                    >
-                      <FiArrowRight className="text-surface-400 group-hover:text-primary-500" />
-                    </Link>
-                  </motion.div>
-                ))
-              )}
+                      <Link to={`/admin/recipes/${recipe?.recipeId}`}>
+                        <div className="h-12 w-12 rounded-2xl flex items-center justify-center bg-surface-50 text-surface-400 group-hover:bg-primary-500 group-hover:text-white group-hover:rotate-45 transition-all duration-500">
+                          <FiArrowRight size={20} />
+                        </div>
+                      </Link>
+                    </motion.div>
+                  ))
+                )}
+              </AnimatePresence>
             </div>
           </section>
 
-          <section>
-            <div className="mb-8 flex items-center justify-between">
-              <h2 className="flex items-center gap-3 text-3xl font-black tracking-tight text-surface-900">
-                <FiTrendingUp className="text-accent-500" />
-                Category Pulse
-              </h2>
-            </div>
+          {/* Sidebar Insights */}
+          <aside className="space-y-12">
+            <section className="space-y-8">
+              <div className="flex items-center gap-3 text-surface-900">
+                <FiTrendingUp className="text-primary-500" />
+                <h2 className="text-xl font-serif font-bold tracking-tight">Category Distribution</h2>
+              </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              {categoryItems.length === 0 ? (
-                <div className="col-span-2 rounded-3xl border border-surface-100 bg-white p-6 text-surface-500">
-                  No category data found.
-                </div>
-              ) : (
-                categoryItems.slice(0, 6).map((item, index) => (
+              <div className="space-y-4">
+                {categoryItems.slice(0, 5).map((item, index) => (
                   <div
-                    key={item.categoryId || item.categoryName || index}
-                    className="card-premium cursor-default p-6 transition-all hover:border-accent-100"
+                    key={item.categoryId || index}
+                    className="p-6 rounded-[2rem] bg-surface-950 text-white border border-white/5 shadow-xl relative overflow-hidden group"
                   >
-                    <p className="font-black tracking-tight text-surface-900">
-                      {item.categoryName || 'Unknown Category'}
-                    </p>
-
-                    <div className="mt-6 flex items-end justify-between">
-                      <span className="text-3xl font-black text-accent-500">
-                        {item.recipeCount || 0}
-                      </span>
-                      <span className="text-[10px] font-black uppercase tracking-widest text-surface-400">
-                        Recipes
-                      </span>
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div>
+                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-surface-500 mb-1">Classification</p>
+                        <h4 className="font-serif font-bold text-lg leading-tight group-hover:text-primary-400 transition-colors">
+                          {item.categoryName}
+                        </h4>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-2xl font-serif font-bold text-primary-400">{item.recipeCount || 0}</p>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-surface-500 mt-1">Units</p>
+                      </div>
                     </div>
+                    <div className="absolute -bottom-10 -right-10 h-24 w-24 bg-primary-500/5 rounded-full blur-2xl group-hover:bg-primary-500/10 transition-all duration-700" />
                   </div>
-                ))
-              )}
-            </div>
-          </section>
+                ))}
+              </div>
+            </section>
+
+            {/* Quick Actions */}
+            <section className="bg-primary-50 rounded-[3rem] p-10 border border-primary-100">
+               <div className="flex items-center gap-3 text-primary-600 mb-6">
+                  <FiZap />
+                  <h3 className="text-sm font-bold uppercase tracking-widest">Rapid Response</h3>
+               </div>
+               <div className="space-y-3">
+                  <Button variant="secondary" className="w-full justify-start bg-white" icon={<FiUsers />}>Audit Personnel</Button>
+                  <Button variant="secondary" className="w-full justify-start bg-white" icon={<FiFlag />}>Review Reports</Button>
+               </div>
+            </section>
+          </aside>
         </div>
       </div>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminDashboardPage
+export default AdminDashboardPage;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { FiArrowRight, FiHeart, FiSearch, FiClock, FiUsers, FiStar, FiZap, FiTarget, FiLayers } from 'react-icons/fi'
 import { GiMeal, GiCookingPot, GiChefToque } from 'react-icons/gi'
@@ -9,6 +10,7 @@ import { categoryApi } from '../../api/categoryApi'
 import RecipeGrid from '../../components/recipe/RecipeGrid'
 import Loader from '../../components/common/Loader'
 import usePageTitle from '../../hooks/usePageTitle.jsx'
+import { useAuth } from '../../hooks/useAuth.jsx'
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -32,9 +34,11 @@ const itemVariants = {
 
 function HomePage() {
   usePageTitle('Home')
+  const navigate = useNavigate()
   const [topRecipes, setTopRecipes] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const { isAuthenticated } = useAuth()
 
   const { scrollY } = useScroll()
   const y1 = useTransform(scrollY, [0, 500], [0, 200])
@@ -60,55 +64,49 @@ function HomePage() {
   return (
     <AppLayout>
       {/* Hero Section */}
-      <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden bg-surface-900">
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-[#2E2E2E]">
         <motion.div
           style={{ y: y1 }}
-          className="absolute inset-0 z-0 opacity-40"
+          className="absolute inset-0 z-0 opacity-100"
         >
           <img
-            src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=1920&q=80"
-            alt=""
-            className="w-full h-full object-cover"
+            src="/organic-hero-bg.png"
+            alt="Healthy Organic Meal"
+            className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-surface-900 via-surface-900/60 to-surface-50" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#212121]/95 via-[#212121]/70 to-transparent" />
         </motion.div>
 
         <div className="container-app relative z-10 pt-20">
-          <div className="max-w-4xl">
+          <div className="max-w-2xl">
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <span className="inline-block px-4 py-2 rounded-full bg-primary-500/10 border border-primary-500/20 text-primary-400 text-xs font-black uppercase tracking-[0.3em] mb-8">
-                The Art of Home Cooking
+              <span className="inline-block text-[#EAEAEA] text-xs font-bold uppercase tracking-[0.2em] mb-4">
+                ORGANIC • FRESH • HEALTHY
               </span>
-              <h1 className="text-6xl md:text-8xl font-black text-white leading-none mb-8 tracking-tighter">
-                Cook Like a <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-accent-400">Professional</span>
+              <h1 className="text-5xl md:text-7xl lg:text-8xl font-sans font-bold text-white leading-[1.1] mb-6 tracking-tight">
+                Healthy<br />Organic Food
               </h1>
-              <p className="text-xl md:text-2xl text-surface-300 mb-12 max-w-2xl leading-relaxed">
-                Unlock 5000+ premium recipes, master culinary techniques, and organize your kitchen with our smart meal planner.
+              <p className="text-lg md:text-xl text-[#EAEAEA] mb-10 max-w-lg leading-relaxed font-normal">
+                Discover fresh and healthy recipes made with natural ingredients.
               </p>
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, y: 40 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4, duration: 0.8 }}
-              className="flex flex-wrap gap-6"
+              transition={{ delay: 0.2, duration: 0.8 }}
+              className="flex flex-wrap gap-4"
             >
-              <Link to="/recipes" className="btn-primary flex items-center gap-3 px-10 py-5 text-lg group">
-                Start Exploring <FiArrowRight className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link to="/register" className="glass py-5 px-10 rounded-2xl text-white font-bold text-lg hover:bg-white/20 transition-all border-white/20">
-                Join Community
+              <Link to="/recipes" className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#FF6A00] hover:bg-[#E65C00] text-white rounded-full font-bold shadow-lg shadow-[#FF6A00]/30 transition-all duration-300 transform hover:-translate-y-1">
+                Explore Recipes <FiArrowRight className="mt-0.5" />
               </Link>
             </motion.div>
           </div>
         </div>
-
-        {/* Floating elements for visual wow */}
         <motion.div
           animate={{ y: [0, -20, 0] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
@@ -231,7 +229,19 @@ function HomePage() {
               Join thousands of home chefs. Upload your creations, get feedback, and inspire others to cook healthy, delicious meals.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/recipes/create" className="btn-primary py-5 px-10 text-lg">Create First Recipe</Link>
+              <Link 
+                to="/recipes/create" 
+                onClick={(e) => {
+                  if (!isAuthenticated) {
+                    e.preventDefault();
+                    toast.error('Sign in to create a recipe');
+                    navigate('/login', { state: { from: '/recipes/create' } });
+                  }
+                }}
+                className="btn-primary py-5 px-10 text-lg"
+              >
+                Create First Recipe
+              </Link>
               <Link to="/about" className="btn-secondary py-5 px-10 text-lg">Learn More</Link>
             </div>
           </div>
@@ -256,15 +266,17 @@ function HomePage() {
       </section>
 
       {/* Footer pre-action */}
-      <section className="container-app py-20 text-center border-t border-surface-100">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-4xl font-black text-surface-900 mb-6 tracking-tight">Ready to start your culinary journey?</h2>
-          <p className="text-xl text-surface-500 mb-10 leading-relaxed">
-            Create an account today and get access to exclusive features like the meal planner and smart shopping lists.
-          </p>
-          <Link to="/register" className="btn-primary px-12 py-5 text-xl">Sign Up for Free</Link>
-        </div>
-      </section>
+      {!isAuthenticated && (
+        <section className="container-app py-20 text-center border-t border-surface-100">
+          <div className="max-w-3xl mx-auto">
+            <h2 className="text-4xl font-black text-surface-900 mb-6 tracking-tight">Ready to start your culinary journey?</h2>
+            <p className="text-xl text-surface-500 mb-10 leading-relaxed">
+              Create an account today and get access to exclusive features like the meal planner and smart shopping lists.
+            </p>
+            <Link to="/register" className="btn-primary px-12 py-5 text-xl">Sign Up for Free</Link>
+          </div>
+        </section>
+      )}
     </AppLayout>
   )
 }

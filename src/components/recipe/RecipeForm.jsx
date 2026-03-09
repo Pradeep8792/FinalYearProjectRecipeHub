@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
-import { FiType, FiTag, FiFileText, FiClock, FiUsers, FiAward, FiSave } from 'react-icons/fi'
-import Button from '../common/Button'
-import { categoryApi } from '../../api/categoryApi'
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { FiType, FiTag, FiFileText, FiClock, FiUsers, FiAward, FiSave, FiAlertCircle } from 'react-icons/fi';
+import Button from '../common/Button';
+import Input from '../common/Input';
+import { categoryApi } from '../../api/categoryApi';
 
 const initialForm = {
   categoryId: '',
@@ -12,167 +13,157 @@ const initialForm = {
   cookingTime: '',
   difficulty: 'Medium',
   servings: 2
-}
+};
 
-function RecipeForm({ initialValues, onSubmit, submitting }) {
-  const [categories, setCategories] = useState([])
-  const [form, setForm] = useState(initialValues || initialForm)
+const RecipeForm = ({ initialValues, onSubmit, submitting }) => {
+  const [categories, setCategories] = useState([]);
+  const [form, setForm] = useState(initialValues || initialForm);
 
   useEffect(() => {
-    categoryApi.getAll().then(setCategories)
-  }, [])
+    categoryApi.getAll().then(setCategories).catch(console.error);
+  }, []);
 
   const handleChange = (e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }))
-  }
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleInnerSubmit = (e) => {
+    e.preventDefault();
+    onSubmit({
+      ...form,
+      categoryId: Number(form.categoryId),
+      cookingTime: Number(form.cookingTime),
+      servings: Number(form.servings)
+    });
+  };
 
   return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault()
-        onSubmit({
-          ...form,
-          categoryId: Number(form.categoryId),
-          cookingTime: Number(form.cookingTime),
-          servings: Number(form.servings)
-        })
-      }}
-      className="space-y-10"
-    >
-      <div className="card-premium p-8 md:p-12 space-y-10">
-        <header className="border-b border-surface-50 pb-8">
-          <h3 className="text-xl font-black text-surface-900 tracking-tight flex items-center gap-3">
-            <FiFileText className="text-primary-500" />
-            Core Information
-          </h3>
+    <form onSubmit={handleInnerSubmit} className="space-y-8">
+      <div className="bg-white rounded-[2rem] border border-surface-200 shadow-premium p-8 md:p-12">
+        <header className="border-b border-surface-100 pb-8 mb-10">
+          <div className="flex items-center gap-3 text-primary-600 mb-2">
+            <FiFileText size={20} />
+            <span className="text-[10px] font-bold uppercase tracking-widest">Recipe Identity</span>
+          </div>
+          <h3 className="text-2xl font-bold text-surface-900 tracking-tight">Recipe Details</h3>
         </header>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Recipe Title</label>
-            <div className="relative group">
-              <FiType className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300 group-focus-within:text-primary-500 transition-colors" />
-              <input
-                name="title"
-                value={form.title}
-                onChange={handleChange}
-                className="w-full h-14 pl-14 pr-6 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold placeholder:text-surface-300 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-50 focus:outline-none transition-all"
-                placeholder="Enter a cinematic title..."
-                required
-              />
-            </div>
-          </div>
+        <div className="grid md:grid-cols-2 gap-8 mb-10">
+          <Input
+            label="Recipe Title"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+            icon={<FiType />}
+            placeholder="e.g. Traditional Italian Lasagna"
+            required
+          />
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Classification (Category)</label>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-surface-700 ml-1">Category</label>
             <div className="relative group">
-              <FiTag className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300 group-focus-within:text-primary-500 transition-colors" />
+              <FiTag className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary-500 transition-colors z-10" />
               <select
-                className="w-full h-14 pl-14 pr-6 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-50 focus:outline-none transition-all appearance-none"
                 name="categoryId"
                 value={form.categoryId}
                 onChange={handleChange}
                 required
+                className="w-full h-12 pl-12 pr-10 rounded-xl bg-surface-50 border border-surface-200 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 focus:bg-white transition-all appearance-none"
               >
                 <option value="">Select Category...</option>
-                {categories.map((category) => (
-                  <option key={category.categoryId} value={category.categoryId}>{category.categoryName}</option>
+                {categories.map((cat) => (
+                  <option key={cat.categoryId} value={cat.categoryId}>{cat.categoryName}</option>
                 ))}
               </select>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-surface-400">
+                <FiAlertCircle size={14} />
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Narrative Summary (Description)</label>
-          <textarea
-            className="w-full min-h-[120px] px-6 py-4 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold placeholder:text-surface-300 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-50 focus:outline-none transition-all resize-none"
-            name="description"
-            value={form.description}
-            onChange={handleChange}
-            placeholder="Give your audience a taste of the experience..."
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Preparation Methodology (Instructions)</label>
-          <textarea
-            className="w-full min-h-[220px] px-6 py-5 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold placeholder:text-surface-300 focus:bg-white focus:border-primary-500 focus:ring-4 focus:ring-primary-50 focus:outline-none transition-all resize-none"
-            name="instructions"
-            value={form.instructions}
-            onChange={handleChange}
-            placeholder="Step-by-step guidance for the aspiring chef..."
-            required
-          />
-        </div>
-
-        <div className="grid gap-8 md:grid-cols-3 pt-6 border-t border-surface-50">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Time (Mins)</label>
-            <div className="relative">
-              <FiClock className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300" />
-              <input
-                className="w-full h-14 pl-14 pr-6 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold focus:outline-none focus:border-primary-500 transition-all"
-                name="cookingTime"
-                type="number"
-                value={form.cookingTime}
-                onChange={handleChange}
-                required
-              />
-            </div>
+        <div className="space-y-8">
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-surface-700 ml-1">Description</label>
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              placeholder="Briefly describe what makes this dish special..."
+              className="w-full min-h-[100px] p-4 rounded-xl bg-surface-50 border border-surface-200 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 focus:bg-white transition-all resize-none"
+              required
+            />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Skill Complexity</label>
-            <div className="relative">
-              <FiAward className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300" />
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-surface-700 ml-1">Instructions</label>
+            <textarea
+              name="instructions"
+              value={form.instructions}
+              onChange={handleChange}
+              placeholder="Enter step-by-step instructions, one step per line..."
+              className="w-full min-h-[200px] p-6 rounded-xl bg-surface-50 border border-surface-200 text-sm font-semibold leading-relaxed focus:outline-none focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 focus:bg-white transition-all resize-none"
+              required
+            />
+          </div>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3 pt-10 mt-10 border-t border-surface-100">
+          <Input
+            label="Cooking Time (Mins)"
+            name="cookingTime"
+            type="number"
+            value={form.cookingTime}
+            onChange={handleChange}
+            icon={<FiClock />}
+            required
+          />
+
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold text-surface-700 ml-1">Difficulty</label>
+            <div className="relative group">
+              <FiAward className="absolute left-4 top-1/2 -translate-y-1/2 text-surface-400 group-focus-within:text-primary-500 transition-colors z-10" />
               <select
-                className="w-full h-14 pl-14 pr-6 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold focus:outline-none focus:border-primary-500 transition-all appearance-none"
                 name="difficulty"
                 value={form.difficulty}
                 onChange={handleChange}
+                className="w-full h-12 pl-12 pr-10 rounded-xl bg-surface-50 border border-surface-200 text-sm font-semibold focus:outline-none focus:ring-4 focus:ring-primary-500/5 focus:border-primary-500 focus:bg-white transition-all appearance-none"
               >
-                <option value="Easy">Beginner</option>
-                <option value="Medium">Intermediate</option>
-                <option value="Hard">Mastery</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
               </select>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-widest text-surface-400 ml-1">Portion Size</label>
-            <div className="relative">
-              <FiUsers className="absolute left-5 top-1/2 -translate-y-1/2 text-surface-300" />
-              <input
-                className="w-full h-14 pl-14 pr-6 rounded-2xl bg-surface-50 border border-surface-100 text-surface-900 font-bold focus:outline-none focus:border-primary-500 transition-all"
-                name="servings"
-                type="number"
-                value={form.servings}
-                onChange={handleChange}
-                required
-              />
-            </div>
-          </div>
+          <Input
+            label="Servings"
+            name="servings"
+            type="number"
+            value={form.servings}
+            onChange={handleChange}
+            icon={<FiUsers />}
+            required
+          />
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <button
+      <div className="flex justify-end gap-4">
+        <Button
           type="submit"
-          disabled={submitting}
-          className="px-12 py-5 bg-surface-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] flex items-center gap-3 hover:bg-primary-600 transition-all shadow-xl shadow-surface-100 disabled:opacity-50"
+          variant="primary"
+          size="lg"
+          isLoading={submitting}
+          icon={<FiSave />}
+          className="px-12"
         >
-          {submitting ? 'Committing Changes...' : (
-            <>
-              Publish Professional Recipe
-              <FiSave className="animate-pulse" />
-            </>
-          )}
-        </button>
+          {submitting ? 'Saving...' : 'Save Recipe'}
+        </Button>
       </div>
     </form>
-  )
-}
+  );
+};
 
-export default RecipeForm
+export default RecipeForm;
+

@@ -1,71 +1,109 @@
-import { useEffect, useState } from 'react'
-import toast from 'react-hot-toast'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FiAlertTriangle, FiCheck, FiX, FiEye, FiMessageSquare, FiFlag, FiTrash2, FiClock } from 'react-icons/fi'
-import AdminLayout from '../../components/layout/AdminLayout'
-import Loader from '../../components/common/Loader'
-import { adminApi } from '../../api/adminApi.jsx'
-import usePageTitle from '../../hooks/usePageTitle.jsx'
+import { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  FiAlertTriangle, 
+  FiCheck, 
+  FiX, 
+  FiEye, 
+  FiMessageSquare, 
+  FiFlag, 
+  FiTrash2, 
+  FiClock,
+  FiShield,
+  FiFilter,
+  FiChevronRight,
+  FiUser
+} from 'react-icons/fi';
+import AdminLayout from '../../components/layout/AdminLayout';
+import Loader from '../../components/common/Loader';
+import Button from '../../components/common/Button';
+import { adminApi } from '../../api/adminApi.jsx';
+import usePageTitle from '../../hooks/usePageTitle.jsx';
 
-function AdminReportsPage() {
-  usePageTitle('Admin — Reports')
-  const [reports, setReports] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [filterStatus, setFilterStatus] = useState('All')
+const AdminReportsPage = () => {
+  usePageTitle('Incident Management | Executive Console');
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState('All');
 
   const loadReports = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const data = await adminApi.getReports()
-      setReports(data)
+      const data = await adminApi.getReports();
+      setReports(data);
     } catch {
-      toast.error('Strategic breach: Could not load reports')
+      toast.error('Strategic breach: Could not load reports');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    loadReports()
-  }, [])
+    loadReports();
+  }, []);
 
   const filteredReports = reports.filter(r =>
     filterStatus === 'All' ? true : r.status === filterStatus
-  )
+  );
 
   const handleAction = async (reportId, action) => {
     try {
-      await adminApi.resolveReport(reportId, action)
-      toast.success(`Report ${action === 'Dismiss' ? 'Dismissed' : 'Actioned'}`)
-      loadReports()
+      await adminApi.resolveReport(reportId, action);
+      toast.success(`Consensus Reached: Report ${action === 'Dismiss' ? 'Dismissed' : 'Actioned'}`);
+      loadReports();
     } catch {
-      toast.error('Moderation action failed')
+      toast.error('Moderation protocol failure: Resolution failed');
     }
+  };
+
+  const getStatusBadge = (status) => {
+    const styles = {
+      Pending: 'bg-warning/10 text-warning border-warning/20',
+      Resolved: 'bg-success/10 text-success border-success/20'
+    };
+    
+    return (
+      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border text-[9px] font-bold uppercase tracking-widest ${styles[status]}`}>
+        <span className={`h-1.5 w-1.5 rounded-full ${status === 'Pending' ? 'bg-warning animate-pulse' : 'bg-success'}`} />
+        {status}
+      </span>
+    );
+  };
+
+  if (loading) {
+    return (
+      <AdminLayout>
+        <div className="flex flex-col items-center justify-center py-40">
+          <Loader variant="primary" />
+          <p className="mt-6 text-sm font-bold text-surface-400 uppercase tracking-widest animate-pulse">Scanning Incident Queue...</p>
+        </div>
+      </AdminLayout>
+    );
   }
 
   return (
     <AdminLayout>
-      <div className="space-y-10 pb-20">
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-            >
-              <span className="text-primary-500 font-black uppercase tracking-[0.2em] text-[10px] mb-4 block">Moderation Protocol</span>
-              <h1 className="text-5xl font-black text-surface-900 tracking-tighter">
-                Active Reports
-              </h1>
-            </motion.div>
+      <div className="space-y-16 pb-20">
+        <header className="flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+          <div className="max-w-2xl">
+            <div className="flex items-center gap-3 text-primary-500 mb-2">
+              <FiShield size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-widest">Moderation Protocol</span>
+            </div>
+            <h1 className="text-5xl md:text-6xl font-serif font-bold text-surface-900 tracking-tight leading-tight">Active Reports</h1>
+            <p className="mt-3 text-surface-500 text-lg font-medium leading-relaxed">
+              Managing community friction and content integrity via the global incident response queue.
+            </p>
           </div>
 
-          <div className="flex bg-surface-100 p-1.5 rounded-2xl">
+          <div className="flex bg-white p-2 rounded-[2rem] border border-surface-200 shadow-sm relative z-10">
             {['All', 'Pending', 'Resolved'].map((status) => (
               <button
                 key={status}
                 onClick={() => setFilterStatus(status)}
-                className={`px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${filterStatus === status
-                    ? 'bg-white text-surface-900 shadow-soft border border-surface-100'
+                className={`px-8 py-3 rounded-[1.5rem] text-[10px] font-bold uppercase tracking-widest transition-all ${filterStatus === status
+                    ? 'bg-surface-950 text-white shadow-xl'
                     : 'text-surface-400 hover:text-surface-600'
                   }`}
               >
@@ -75,18 +113,16 @@ function AdminReportsPage() {
           </div>
         </header>
 
-        {loading ? (
-          <div className="py-24"><Loader /></div>
-        ) : (
-          <div className="card-premium overflow-hidden border border-surface-100">
-            <table className="w-full text-left">
-              <thead className="bg-surface-50 border-b border-surface-100">
+        <div className="bg-white rounded-[3.5rem] border border-surface-200 shadow-premium overflow-hidden">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="min-w-full divide-y divide-surface-100 text-left">
+              <thead className="bg-surface-50/50">
                 <tr>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-surface-400">Moderation Target</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-surface-400">Intelligence (Reason)</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-surface-400">Reporter Status</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-surface-400">Current Phase</th>
-                  <th className="px-8 py-6 text-[10px] font-black uppercase tracking-widest text-surface-400">Actions</th>
+                  <th className="px-10 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-surface-400">Moderation Target</th>
+                  <th className="px-10 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-surface-400">Intel Brief</th>
+                  <th className="px-10 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-surface-400">Originating Source</th>
+                  <th className="px-10 py-8 text-[10px] font-bold uppercase tracking-[0.2em] text-surface-400">Response Phase</th>
+                  <th className="px-10 py-8 text-right text-[10px] font-bold uppercase tracking-[0.2em] text-surface-400">Tactical Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-surface-50">
@@ -96,67 +132,73 @@ function AdminReportsPage() {
                       key={report.reportId}
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="group hover:bg-surface-50/50 transition-all"
+                      exit={{ opacity: 0, scale: 0.98 }}
+                      transition={{ delay: i * 0.03 }}
+                      className="group hover:bg-red-50/10 transition-all"
                     >
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-xl bg-primary-50 flex items-center justify-center text-primary-500">
-                            <FiFlag size={18} />
+                      <td className="px-10 py-8">
+                        <div className="flex items-center gap-5">
+                          <div className="h-12 w-12 rounded-2xl bg-primary-50 flex items-center justify-center text-primary-500 border border-primary-100 overflow-hidden group-hover:bg-primary-500 group-hover:text-white transition-all duration-500">
+                            <FiFlag size={20} className="group-hover:rotate-12 transition-transform" />
                           </div>
                           <div>
-                            <p className="font-black text-surface-900 text-sm tracking-tight">{report.recipeTitle || 'Recipe ID: ' + report.recipeId}</p>
-                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mt-0.5">ID: #{report.reportId}</p>
+                            <p className="font-serif font-bold text-lg text-surface-900 group-hover:text-primary-600 transition-colors tracking-tight leading-tight">
+                              {report.recipeTitle || `Node ID: ${report.recipeId}`}
+                            </p>
+                            <p className="text-[10px] font-bold text-surface-400 uppercase tracking-widest mt-1">Incident Token: #{report.reportId}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-start gap-2">
-                          <FiMessageSquare className="mt-1 text-surface-300" />
-                          <p className="text-sm font-medium text-surface-600 max-w-[250px] leading-relaxed">
-                            {report.reason || 'No detailed intel provided.'}
+                      <td className="px-10 py-8">
+                        <div className="flex items-start gap-3">
+                          <FiMessageSquare className="mt-1 text-primary-400 flex-shrink-0" size={14} />
+                          <p className="text-sm font-medium text-surface-600 max-w-[280px] leading-relaxed">
+                            {report.reason || 'No detailed intel provided in this transmission.'}
                           </p>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-2">
-                          <div className="h-6 w-6 rounded-full bg-surface-100 flex items-center justify-center text-surface-400">
-                            <FiCheck size={12} />
-                          </div>
-                          <span className="text-xs font-bold text-surface-900">{report.reporterName || 'Anonymous Intel'}</span>
+                      <td className="px-10 py-8">
+                        <div className="flex items-center gap-3">
+                           <div className="h-10 w-10 rounded-xl bg-surface-50 border border-surface-100 flex items-center justify-center text-surface-400">
+                              <FiUser size={16} />
+                           </div>
+                           <div>
+                              <span className="text-xs font-bold text-surface-900 block truncate max-w-[120px]">
+                                {report.reporterName || 'External Intel'}
+                              </span>
+                              <span className="text-[9px] font-bold text-surface-400 uppercase tracking-widest">Source Verified</span>
+                           </div>
                         </div>
                       </td>
-                      <td className="px-8 py-6">
-                        <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] ${report.status === 'Pending'
-                            ? 'bg-amber-50 text-amber-600 border border-amber-100'
-                            : 'bg-green-50 text-green-600 border border-green-100'
-                          }`}>
-                          {report.status}
-                        </span>
+                      <td className="px-10 py-8">
+                        {getStatusBadge(report.status)}
                       </td>
-                      <td className="px-8 py-6">
-                        <div className="flex items-center gap-3">
+                      <td className="px-10 py-8">
+                        <div className="flex items-center justify-end gap-3">
                           {report.status === 'Pending' && (
                             <>
-                              <button
+                              <Button
+                                variant="primary"
+                                size="sm"
                                 onClick={() => handleAction(report.reportId, 'Resolve')}
-                                className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-50 text-green-600 hover:bg-green-600 hover:text-white transition-all shadow-sm"
-                                title="Resolve & Action"
-                              >
-                                <FiCheck />
-                              </button>
-                              <button
+                                icon={<FiCheck />}
+                                className="h-10 w-10 !p-0 bg-success border-success text-white"
+                              />
+                              <Button
+                                variant="secondary"
+                                size="sm"
                                 onClick={() => handleAction(report.reportId, 'Dismiss')}
-                                className="h-10 w-10 flex items-center justify-center rounded-xl bg-surface-100 text-surface-400 hover:bg-surface-900 hover:text-white transition-all shadow-sm"
-                                title="Dismiss Report"
-                              >
-                                <FiX />
-                              </button>
+                                icon={<FiX />}
+                                className="h-10 w-10 !p-0 bg-surface-50 hover:bg-surface-900 hover:text-white"
+                              />
                             </>
                           )}
-                          <button className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-600 hover:text-white transition-all shadow-sm">
-                            <FiEye />
-                          </button>
+                          <Button 
+                            variant="secondary"
+                            size="sm"
+                            icon={<FiEye />}
+                            className="h-10 w-10 !p-0 border-surface-200"
+                          />
                         </div>
                       </td>
                     </motion.tr>
@@ -165,18 +207,26 @@ function AdminReportsPage() {
               </tbody>
             </table>
 
-            {filteredReports.length === 0 && (
-              <div className="py-24 text-center">
-                <FiAlertTriangle className="mx-auto text-surface-100 mb-6" size={64} />
-                <h3 className="text-2xl font-black text-surface-300">Clean Slate Protocol.</h3>
-                <p className="text-surface-400 font-medium mt-2">No active reports require immediate moderation.</p>
-              </div>
-            )}
+            <AnimatePresence>
+              {filteredReports.length === 0 && (
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="py-40 text-center grayscale opacity-40"
+                >
+                  <FiShield className="mx-auto text-surface-100 mb-6" size={80} />
+                  <h3 className="text-3xl font-serif font-bold text-surface-900 tracking-tight">System Secure</h3>
+                  <p className="text-surface-400 font-medium max-w-xs mx-auto mt-2 leading-relaxed">
+                    The moderation queue is currently empty. No active threats or community reports require intervention.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        )}
+        </div>
       </div>
     </AdminLayout>
-  )
-}
+  );
+};
 
-export default AdminReportsPage
+export default AdminReportsPage;

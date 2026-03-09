@@ -2,30 +2,45 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
 
 :root {
-  --glass-bg: rgba(255, 255, 255, 0.75);
-  --glass-border: rgba(255, 255, 255, 0.3);
+  /* Design tokens - aligned with Tailwind config */
+  --primary: #FF6A00;
+  --secondary: #E65C00;
+  --bg: #FFFFFF;
+  --card: #FFFFFF;
+  --border: #EAEAEA;
+  --text: #2E2E2E;
+  --success: #22C55E;
+  --danger: #EF4444;
+
+  /* Glassmorphism */
+  --glass-bg: rgba(244, 237, 228, 0.75);
+  --glass-border: rgba(244, 237, 228, 0.3);
+
+  /* Focus and Shadows */
+  --focus-ring-color: rgba(255, 106, 0, 0.15);
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
 }
 
 body {
   margin: 0;
   font-family: 'Outfit', sans-serif;
-  background-color: #fdfdfd;
-  color: #0f172a;
+  background-color: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
-h1,
-h2,
-h3,
-.font-serif {
+h1, h2, h3, h4, h5, h6, .font-serif {
   font-family: 'Playfair Display', serif;
 }
 
+/* Base Utility Classes */
 .glass {
   background: var(--glass-bg);
   backdrop-filter: blur(12px);
@@ -41,7 +56,7 @@ h3,
 }
 
 .container-app {
-  max-width: 1400px;
+  max-width: 1280px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 1.5rem;
@@ -49,19 +64,88 @@ h3,
 }
 
 @layer components {
-  .btn-primary {
-    @apply relative overflow-hidden rounded-2xl bg-primary-500 px-6 py-3 font-semibold text-white shadow-lg transition-all hover:bg-primary-600 hover:shadow-primary-200 active:scale-95;
+  /* Typography Scale */
+  .heading-hero {
+    @apply font-serif text-4xl md:text-5xl lg:text-7xl font-bold leading-tight;
   }
-
-  .btn-secondary {
-    @apply rounded-2xl border border-surface-200 bg-white px-6 py-3 font-semibold text-surface-700 shadow-sm transition-all hover:border-primary-500 hover:text-primary-500 active:scale-95;
+  
+  .heading-section {
+    @apply font-serif text-3xl md:text-4xl font-bold;
   }
 
   .card-premium {
-    @apply rounded-[2.5rem] border border-surface-100 bg-white p-8 shadow-premium transition-all hover:shadow-soft-xl;
+    @apply rounded-2xl border border-surface-200 bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:border-surface-300;
   }
 
   .input-premium {
-    @apply w-full rounded-2xl border border-surface-200 bg-surface-50 p-4 transition-all focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary-100;
+    @apply w-full rounded-xl border border-surface-200 bg-white px-4 py-3 text-surface-900 transition-all placeholder:text-surface-400 focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-100 disabled:bg-surface-50 disabled:cursor-not-allowed;
   }
+
+  /* Reusable button styles used in HomePage hero & other pages */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl bg-primary-500 px-8 py-4 font-bold text-white shadow-lg shadow-primary-500/20 transition-all duration-200 hover:bg-primary-600 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-100;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-2xl border border-surface-200 bg-white px-8 py-4 font-bold text-surface-900 shadow-sm transition-all duration-200 hover:border-surface-300 hover:bg-surface-50 hover:shadow-md active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-surface-100;
+  }
+}
+
+/* Custom Scrollbar for modern look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Named scrollbar class for elements needing it explicitly */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #E2E8F0;
+  border-radius: 10px;
+}
+
+/* Animations */
+.hover-lift {
+  @apply transition-transform duration-300 hover:-translate-y-1;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Page transition base */
+.page-enter {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }

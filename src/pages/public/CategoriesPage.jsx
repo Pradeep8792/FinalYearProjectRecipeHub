@@ -59,17 +59,17 @@ function CategoriesPage() {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-surface-50 py-24">
+      <div className="min-h-screen bg-[#F4EDE4] py-24">
         <div className="container-app">
           <header className="mb-16 max-w-2xl">
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
             >
-              <span className="mb-4 block text-[10px] font-black uppercase tracking-[0.2em] text-primary-500">
+              <span className="mb-4 block text-[10px] font-black uppercase tracking-[0.2em] text-[#FF6A00]">
                 Cuisine Exploration
               </span>
-              <h1 className="mb-6 text-5xl font-black tracking-tighter text-surface-900 md:text-7xl">
+              <h1 className="mb-6 text-5xl font-sans font-bold tracking-tight text-[#2E2E2E] md:text-7xl">
                 Taste by Design
               </h1>
               <p className="text-lg font-medium leading-relaxed text-surface-500">
@@ -107,10 +107,10 @@ function CategoriesPage() {
                       <span className="mb-2 text-[10px] font-black uppercase tracking-[0.3em] text-white/60">
                         Category
                       </span>
-                      <h3 className="mb-4 text-3xl font-black tracking-tight text-white">
+                      <h3 className="mb-4 text-3xl font-bold tracking-tight text-white">
                         {category.categoryName}
                       </h3>
-                      <div className="flex -translate-x-4 items-center gap-2 text-xs font-black uppercase tracking-widest text-primary-400 opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
+                      <div className="flex -translate-x-4 items-center gap-2 text-xs font-bold uppercase tracking-widest text-[#FF6A00] opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100">
                         Explore Collection
                         <FiChevronRight />
                       </div>

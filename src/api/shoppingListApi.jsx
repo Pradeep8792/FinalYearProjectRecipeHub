@@ -10,7 +10,7 @@ export const shoppingListApi = {
 
   // create a new shopping list for user
   create: async (payload) => {
-    // payload expected to include userId and title
+    // payload expected to include userId and name
     const { userId, ...rest } = payload
     const { data } = await api.post(`/users/${userId}/shoppinglists`, rest)
     return data
@@ -30,7 +30,7 @@ export const shoppingListApi = {
 
   // update item (full payload expected)
   updateItem: async (itemId, payload) => {
-    const { data } = await api.patch(`/shoppinglists/items/${itemId}/check?isChecked=${payload.isPurchased}`)
+    const { data } = await api.patch(`/shoppinglists/items/${itemId}/check?isChecked=${payload.isChecked}`)
     return data
   },
 
